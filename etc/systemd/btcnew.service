@@ -1,0 +1,13 @@
+[Unit]
+Description=Bitcoin New Daemon live network
+After=network.target
+
+[Service]
+Type=simple
+User=btcnew
+WorkingDirectory=/var/btcnew/BitcoinNew
+ExecStart=/usr/bin/btcnew_node --daemon
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

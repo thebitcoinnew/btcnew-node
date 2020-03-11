@@ -1,0 +1,13 @@
+[Unit]
+Description=Bitcoin New Daemon beta network
+After=network.target
+
+[Service]
+Type=simple
+User=btcnew
+WorkingDirectory=/var/btcnew/BitcoinNewBeta
+ExecStart=/usr/bin/btcnew_node-beta --daemon
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

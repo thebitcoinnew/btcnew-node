@@ -1,0 +1,137 @@
+#pragma once
+
+#include <btcnew/lib/config.hpp>
+#include <btcnew/lib/diagnosticsconfig.hpp>
+#include <btcnew/lib/errors.hpp>
+#include <btcnew/lib/jsonconfig.hpp>
+#include <btcnew/lib/numbers.hpp>
+#include <btcnew/lib/rocksdbconfig.hpp>
+#include <btcnew/lib/stats.hpp>
+#include <btcnew/node/ipcconfig.hpp>
+#include <btcnew/node/logging.hpp>
+#include <btcnew/node/websocketconfig.hpp>
+#include <btcnew/secure/common.hpp>
+
+#include <chrono>
+#include <vector>
+
+namespace btcnew
+{
+class tomlconfig;
+
+enum class frontiers_confirmation_mode : uint8_t
+{
+	always, // Always confirm frontiers
+	automatic, // Always mode if node contains representative with at least 50% of principal weight, less frequest requests if not
+	disabled, // Do not confirm frontiers
+	invalid
+};
+
+/**
+ * Node configuration
+ */
+class node_config
+{
+public:
+	node_config ();
+	node_config (uint16_t, btcnew::logging const &);
+	btcnew::error serialize_json (btcnew::jsonconfig &) const;
+	btcnew::error deserialize_json (bool &, btcnew::jsonconfig &);
+	btcnew::error serialize_toml (btcnew::tomlconfig &) const;
+	btcnew::error deserialize_toml (btcnew::tomlconfig &);
+	bool upgrade_json (unsigned, btcnew::jsonconfig &);
+	btcnew::account random_representative () const;
+	btcnew::network_params network_params;
+	uint16_t peering_port{ 0 };
+	btcnew::logging logging;
+	std::vector<std::pair<std::string, uint16_t>> work_peers;
+	std::vector<std::pair<std::string, uint16_t>> secondary_work_peers{ { "127.0.0.1", 8076 } }; /* Default of btcnew-pow-server */
+	std::vector<std::string> preconfigured_peers;
+	std::vector<btcnew::account> preconfigured_representatives;
+	unsigned bootstrap_fraction_numerator{ 1 };
+	btcnew::amount receive_minimum{ btcnew::btcnew_ratio };
+	btcnew::amount vote_minimum{ btcnew::Gbtcnew_ratio };
+	std::chrono::milliseconds vote_generator_delay{ std::chrono::milliseconds (100) };
+	unsigned vote_generator_threshold{ 3 };
+	btcnew::amount online_weight_minimum{ 60000 * btcnew::Gbtcnew_ratio };
+	unsigned online_weight_quorum{ 50 };
+	unsigned password_fanout{ 1024 };
+	unsigned io_threads{ std::max<unsigned> (4, boost::thread::hardware_concurrency ()) };
+	unsigned network_threads{ std::max<unsigned> (4, boost::thread::hardware_concurrency ()) };
+	unsigned work_threads{ std::max<unsigned> (4, boost::thread::hardware_concurrency ()) };
+	unsigned signature_checker_threads{ (boost::thread::hardware_concurrency () != 0) ? boost::thread::hardware_concurrency () - 1 : 0 }; /* The calling thread does checks as well so remove it from the number of threads used */
+	bool enable_voting{ false };
+	unsigned bootstrap_connections{ 4 };
+	unsigned bootstrap_connections_max{ 64 };
+	btcnew::websocket::config websocket_config;
+	btcnew::diagnostics_config diagnostics_config;
+	size_t confirmation_history_size{ 2048 };
+	std::string callback_address;
+	uint16_t callback_port{ 0 };
+	std::string callback_target;
+	int lmdb_max_dbs{ 128 };
+	bool allow_local_peers{ !network_params.network.is_live_network () }; // disable by default for live network
+	btcnew::stat_config stat_config;
+	btcnew::ipc::ipc_config ipc_config;
+	boost::asio::ip::address_v6 external_address{ boost::asio::ip::address_v6{} };
+	uint16_t external_port{ 0 };
+	std::chrono::milliseconds block_processor_batch_max_time{ std::chrono::milliseconds (5000) };
+	std::chrono::seconds unchecked_cutoff_time{ std::chrono::seconds (4 * 60 * 60) }; // 4 hours
+	/** Timeout for initiated async operations */
+	std::chrono::seconds tcp_io_timeout{ (network_params.network.is_test_network () && !is_sanitizer_build) ? std::chrono::seconds (5) : std::chrono::seconds (15) };
+	std::chrono::nanoseconds pow_sleep_interval{ 0 };
+	size_t active_elections_size{ 10000 };
+	/** Default maximum incoming TCP connections, including realtime network & bootstrap */
+	unsigned tcp_incoming_connections_max{ 1024 };
+	bool use_memory_pools{ true };
+	static std::chrono::seconds constexpr keepalive_period = std::chrono::seconds (60);
+	static std::chrono::seconds constexpr keepalive_cutoff = keepalive_period * 5;
+	static std::chrono::minutes constexpr wallet_backup_interval = std::chrono::minutes (5);
+	size_t bandwidth_limit{ 5 * 1024 * 1024 }; // 5MB/s
+	std::chrono::milliseconds conf_height_processor_batch_min_time{ 50 };
+	bool backup_before_upgrade{ false };
+	std::chrono::seconds work_watcher_period{ std::chrono::seconds (5) };
+	double max_work_generate_multiplier{ 64. };
+	uint64_t max_work_generate_difficulty{ btcnew::network_constants::publish_full_threshold };
+	btcnew::rocksdb_config rocksdb_config;
+	btcnew::frontiers_confirmation_mode frontiers_confirmation{ btcnew::frontiers_confirmation_mode::automatic };
+	std::string serialize_frontiers_confirmation (btcnew::frontiers_confirmation_mode) const;
+	btcnew::frontiers_confirmation_mode deserialize_frontiers_confirmation (std::string const &);
+	/** Entry is ignored if it cannot be parsed as a valid address:port */
+	void deserialize_address (std::string const &, std::vector<std::pair<std::string, uint16_t>> &) const;
+
+	static unsigned json_version ()
+	{
+		return 18;
+	}
+};
+
+class node_flags final
+{
+public:
+	std::vector<std::string> config_overrides;
+	bool disable_backup{ false };
+	bool disable_lazy_bootstrap{ false };
+	bool disable_legacy_bootstrap{ false };
+	bool disable_wallet_bootstrap{ false };
+	bool disable_bootstrap_listener{ false };
+	bool disable_bootstrap_bulk_pull_server{ false };
+	bool disable_bootstrap_bulk_push_client{ false };
+	bool disable_rep_crawler{ false };
+	bool disable_tcp_realtime{ false };
+	bool disable_udp{ false };
+	bool disable_unchecked_cleanup{ false };
+	bool disable_unchecked_drop{ true };
+	bool fast_bootstrap{ false };
+	bool read_only{ false };
+	/** Whether to read all frontiers and construct the representative weights */
+	bool cache_representative_weights_from_frontiers{ true };
+	/** Whether to read all frontiers and construct the total cemented count */
+	bool cache_cemented_count_from_frontiers{ true };
+	bool inactive_node{ false };
+	size_t sideband_batch_size{ 512 };
+	size_t block_processor_batch_size{ 0 };
+	size_t block_processor_full_size{ 65536 };
+	size_t block_processor_verification_size{ 0 };
+};
+}
