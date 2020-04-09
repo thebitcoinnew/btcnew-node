@@ -1001,6 +1001,7 @@ send_blocks (new QPushButton ("Send")),
 settings_button (new QPushButton ("Settings")),
 accounts_button (new QPushButton ("Accounts")),
 show_advanced (new QPushButton ("Advanced")),
+show_explorer (new QPushButton ("Explorer")),
 send_blocks_window (new QWidget),
 send_blocks_layout (new QVBoxLayout),
 send_account_label (new QLabel ("Destination account:")),
@@ -1033,6 +1034,7 @@ needs_deterministic_restore (false)
 	entry_window_layout->addWidget (settings_button);
 	entry_window_layout->addWidget (accounts_button);
 	entry_window_layout->addWidget (show_advanced);
+    entry_window_layout->addWidget (show_explorer);
 	entry_window_layout->setContentsMargins (0, 0, 0, 0);
 	entry_window_layout->setSpacing (5);
 	entry_window->setLayout (entry_window_layout);
@@ -1124,6 +1126,10 @@ void btcnew_qt::wallet::start ()
 			this_l->push_main_stack (this_l->advanced.window);
 		}
 	});
+    QObject::connect (show_explorer, &QPushButton::released, [] () {
+        QString link = "https://explorer.bitev.be";
+        QDesktopServices::openUrl(QUrl(link));
+    });
 	QObject::connect (send_blocks_send, &QPushButton::released, [this_w] () {
 		if (auto this_l = this_w.lock ())
 		{

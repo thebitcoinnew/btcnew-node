@@ -339,6 +339,7 @@ public:
 	QPushButton * settings_button;
 	QPushButton * accounts_button;
 	QPushButton * show_advanced;
+    QPushButton * show_explorer;
 
 	QWidget * send_blocks_window;
 	QVBoxLayout * send_blocks_layout;
