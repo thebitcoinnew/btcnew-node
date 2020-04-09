@@ -46,18 +46,9 @@ logging (logging_a)
 			break;
 		case btcnew::btcnew_networks::btcnew_live_network:
 			preconfigured_peers.push_back (default_live_peer_network);
-			preconfigured_representatives.emplace_back ("274AA339E4432EC4FBFE717E070A3D24133E3BA8E89D03FD2E9F6945582B83DE");
             preconfigured_representatives.emplace_back ("4A9F027F5A7FF32678A4FE835EB00645AA9A1FEBF9CDA6C9643CBCFDA85FE2FB");
             preconfigured_representatives.emplace_back ("F9C570A3637B7DB95ADAA3341686937CADD49864C1A0502D93DA9D9C57DDD4CA");
             preconfigured_representatives.emplace_back ("5F2B11128D830204898B29671C9FCCD3B0F55BB313657750F0CC6212BEFE81AD");
-            preconfigured_representatives.emplace_back ("84F377E058CC64D1BE4CB66F0EB32C820898627B2060CB8F9AF2F9344FF160E9");
-            preconfigured_representatives.emplace_back ("AE9C0D341046B7EE2D70C181D8962C7ABC4E68D0FEDF15F4694EC9CEA51E8731");
-            preconfigured_representatives.emplace_back ("E4F6AFF35436A4BB0A972F5B669E08E564A5EA0F8826FF27FF4BA42045BC6D77");
-            preconfigured_representatives.emplace_back ("BFFE8EF9B67250BB9F905BEFBD043399DDA229AB88C67E905193566C79B1B2F5");
-            preconfigured_representatives.emplace_back ("2E7E91CCE36485712CCC964CDEF2589BF6F1C36FF774138A0A8F8B806C3B2E98");
-            preconfigured_representatives.emplace_back ("FFB5B51478B627DBB7B8096C7D59ECA8A72D251717AB3AE3AF4950ABEB0EB23A");
-            preconfigured_representatives.emplace_back ("8ED19C14C5D55F116FEF9D5A158B6608761A11FB3D0CB6F6E8DBD87B274BE7B1");
-            preconfigured_representatives.emplace_back ("AB769BDB915F6C54FE983A8F3BCA34159889D8F249613C15F9F56D14F60DE910");
 			break;
 		default:
 			assert (false);
